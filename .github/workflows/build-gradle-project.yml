@@ -1,0 +1,44 @@
+name: Build Gradle project
+
+on: [push, pull_request]
+
+jobs:
+  build-gradle-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project sources
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup npm
+        env:
+          JFROG_RO_COMMUNITY_ENC_PASSWORD: ${{ secrets.JFROG_RO_COMMUNITY_ENC_PASSWORD }}
+          JFROG_RO_COMMUNITY_USER: ${{ secrets.JFROG_RO_COMMUNITY_USER }}
+          JFROG_RO_COMMUNITY_USER_EMAIL: ${{ secrets.JFROG_RO_COMMUNITY_USER_EMAIL }}
+        run: |
+          npm config set registry https://genesisglobal.jfrog.io/artifactory/api/npm/npm/
+          npm config set @genesislcap:registry https://genesisglobal.jfrog.io/artifactory/api/npm/npm/
+          npm config set //genesisglobal.jfrog.io/artifactory/api/npm/npm/:_password=${JFROG_RO_COMMUNITY_ENC_PASSWORD}
+          npm config set //genesisglobal.jfrog.io/artifactory/api/npm/npm/:username=${JFROG_RO_COMMUNITY_USER}
+          npm config set //genesisglobal.jfrog.io/artifactory/api/npm/npm/:email=${JFROG_RO_COMMUNITY_USER_EMAIL}
+          npm config set //genesisglobal.jfrog.io/artifactory/api/npm/npm/:always-auth=true
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Setup jfrog credentials
+        env:
+          JFROG_RO_COMMUNITY_USER: ${{ secrets.JFROG_RO_COMMUNITY_USER }}
+          JFROG_RO_COMMUNITY_PASSWORD: ${{ secrets.JFROG_RO_COMMUNITY_PASSWORD }}
+        run: |
+            echo genesisArtifactoryUser=${JFROG_RO_COMMUNITY_USER} >> ./server/jvm/gradle.properties
+            echo genesisArtifactoryPassword=${JFROG_RO_COMMUNITY_PASSWORD} >> ./server/jvm/gradle.properties
+
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
+
+      - name: Run build with Gradle Wrapper
+        run: ./gradlew build --info --warning-mode=all --rerun-tasks
