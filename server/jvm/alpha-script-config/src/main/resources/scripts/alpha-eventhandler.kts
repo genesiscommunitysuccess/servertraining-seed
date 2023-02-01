@@ -6,7 +6,6 @@ import global.genesis.alpha.message.event.TradeAllocated
 import global.genesis.alpha.message.event.TradeCancelled
 import global.genesis.alpha.message.event.PositionReport
 import global.genesis.commons.standards.GenesisPaths
-import global.genesis.gen.dao.repository.PositionAsyncRepository
 import global.genesis.gen.view.repository.TradeViewAsyncRepository
 import global.genesis.jackson.core.GenesisJacksonMapper
 
@@ -21,7 +20,6 @@ import global.genesis.jackson.core.GenesisJacksonMapper
  * Modification History
  */
 val tradeViewRepo = inject<TradeViewAsyncRepository>()
-val positionRepo = inject<PositionAsyncRepository>()
 
 eventHandler {
     val stateMachine = inject<TradeStateMachine>()
