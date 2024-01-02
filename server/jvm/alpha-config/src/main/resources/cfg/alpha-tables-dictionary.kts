@@ -22,9 +22,18 @@ tables {
         TRADE_DATE
         ENTERED_BY
         TRADE_STATUS
+        CURRENCY_ID
 
         primaryKey {
             TRADE_ID
+        }
+        indices {
+            unique {
+                SYMBOL
+            }
+            nonUnique {
+                CURRENCY_ID
+            }
         }
     }
 
@@ -47,6 +56,7 @@ tables {
         CURRENCY_ID
         ASSET_CLASS
 
+
         primaryKey {
             INSTRUMENT_ID
         }
@@ -63,6 +73,7 @@ tables {
         primaryKey {
             POSITION_ID
         }
+
         indices {
             unique {
                 INSTRUMENT_ID

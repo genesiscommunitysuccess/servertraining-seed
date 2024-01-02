@@ -37,10 +37,14 @@ eventHandler {
         }
         onCommit { event ->
             val trade = event.details
-
-            if (trade.quantity!! > 0) {
+            if (trade.enteredBy == "TEST"){
+                LOG.warn(">>>>>>>>>>>> THIS IS A CUSTOM WARNING TEST >>>>>>>>>>>>>>>>>>>")
+            }
+            if (trade.quantity > 0) {
                 trade.enteredBy = event.userName
                 stateMachine.insert(entityDb, trade)
+                val dbResult = entityDb.getRange(Trade.byCurrencyId("USD"),1).toList()
+                LOG.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> RESULT $dbResult <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
                 ack()
             }
             else {
