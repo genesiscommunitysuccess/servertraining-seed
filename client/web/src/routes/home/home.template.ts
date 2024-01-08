@@ -20,7 +20,6 @@ export const HomeTemplate = html<Home>`
           createEvent = "EVENT_TRADE_INSERT"
           updateEvent = "EVENT_TRADE_MODIFY"
           deleteEvent = "EVENT_TRADE_CANCELLED"
-          :columns=${x => x.columns}
           :createFormUiSchema=${() => tradeFormCreateSchema}
           :updateFormUiSchema=${() => tradeFormUpdateSchema}
         ></entity-management>

@@ -144,7 +144,6 @@ eventHandler {
 
     eventHandler<Operations>(name="TEST_OPERATIONS"){
         onCommit {
-
             LOG.info("******************* RESULT:  ****************************")
 
             ack()
