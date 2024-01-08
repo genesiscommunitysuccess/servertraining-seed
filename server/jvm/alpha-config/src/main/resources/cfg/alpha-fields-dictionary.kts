@@ -26,7 +26,7 @@ fields {
     field("INSTRUMENT_NAME", type = STRING)
     field("MARKET_ID", type = STRING)
     field("COUNTRY_CODE", type = STRING)
-    field("CURRENCY_ID", type = STRING)
+    field("CURRENCY_ID", type = INT)
     field("ASSET_CLASS", type = STRING)
 
     field("TRADE_DATE", type = DATE, nullable = SysDef.NULLABILITY_FOR_TRADE_FIELDS)

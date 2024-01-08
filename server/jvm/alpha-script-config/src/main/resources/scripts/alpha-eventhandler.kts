@@ -6,6 +6,7 @@ import global.genesis.alpha.message.event.TradeAllocated
 import global.genesis.alpha.message.event.TradeCancelled
 import global.genesis.alpha.message.event.PositionReport
 import global.genesis.commons.standards.GenesisPaths
+import global.genesis.db.rx.entity.multi.RxEntityDb
 import global.genesis.gen.view.repository.TradeViewAsyncRepository
 import global.genesis.jackson.core.GenesisJacksonMapper
 
@@ -37,19 +38,8 @@ eventHandler {
         }
         onCommit { event ->
             val trade = event.details
-            if (trade.enteredBy == "TEST"){
-                LOG.warn(">>>>>>>>>>>> THIS IS A CUSTOM WARNING TEST >>>>>>>>>>>>>>>>>>>")
-            }
-            if (trade.quantity > 0) {
-                trade.enteredBy = event.userName
-                stateMachine.insert(entityDb, trade)
-                val dbResult = entityDb.getRange(Trade.byCurrencyId("USD"),1).toList()
-                LOG.warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> RESULT $dbResult <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-                ack()
-            }
-            else {
-                nack("Quantity must be positive")
-            }
+            entityDb.insert(trade)
+            ack()
         }
     }
 
@@ -64,7 +54,7 @@ eventHandler {
         }
         onCommit { event ->
             val trade = event.details
-            stateMachine.modify(entityDb, trade)
+            entityDb.modify(trade)
             ack()
         }
     }
@@ -151,4 +141,29 @@ eventHandler {
             ack()
         }
     }
+
+    eventHandler<Operations>(name="TEST_OPERATIONS"){
+        onCommit {
+
+            LOG.info("******************* RESULT:  ****************************")
+
+            ack()
+        }
+    }
+
+    eventHandler<TradeStandardization>(transactional = true) {
+        onCommit {
+            val tradesNegativePrices = entityDb.
+            getBulk(TRADE).toList()
+                .filter { it.price < 0 }
+
+            tradesNegativePrices.forEach { t ->
+                t.price = 0.0
+            }
+
+            entityDb.modifyAll(*tradesNegativePrices.toList().toTypedArray())
+            ack()
+        }
+    }
+
 }

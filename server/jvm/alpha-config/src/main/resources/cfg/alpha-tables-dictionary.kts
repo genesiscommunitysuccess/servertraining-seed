@@ -27,6 +27,7 @@ tables {
         primaryKey {
             TRADE_ID
         }
+
         indices {
             unique {
                 SYMBOL
@@ -35,6 +36,7 @@ tables {
                 CURRENCY_ID
             }
         }
+
     }
 
     table (name = "COUNTERPARTY", id = 2001) {
