@@ -1,6 +1,7 @@
 import java.io.File
 import java.time.LocalDate
 import global.genesis.TradeStateMachine
+import global.genesis.alpha.eventhandler.ValidateTrade
 import global.genesis.gen.dao.Trade
 import global.genesis.alpha.message.event.TradeAllocated
 import global.genesis.alpha.message.event.TradeCancelled
@@ -27,14 +28,20 @@ eventHandler {
     eventHandler<Trade>(name = "TRADE_INSERT") {
         schemaValidation = false
         permissionCodes = listOf("INSERT_TRADE")
-        onValidate { event ->
-            val message = event.details
-            verify {
-                entityDb hasEntry Counterparty.byId(message.counterpartyId.toString())
-                entityDb hasEntry Instrument.byId(message.instrumentId.toString())
-            }
+
+        onException { event, throwable ->
+            nack("MENSAGEM DE ERRO EU ESTIVE AQUI, essa é a mensagem: ${throwable.message}")
+        }
+
+        onValidate {
+            ValidateTrade.validateInsert(
+                event = it,
+                entityDb = entityDb
+            )
             ack()
         }
+
+
         onCommit { event ->
             val trade = event.details
 
@@ -50,12 +57,8 @@ eventHandler {
     }
 
     eventHandler<Trade>(name = "TRADE_MODIFY", transactional = true) {
-        onValidate { event ->
-            val message = event.details
-            verify {
-                entityDb hasEntry Counterparty.ById(message.counterpartyId.toString())
-                entityDb hasEntry Instrument.byId(message.instrumentId.toString())
-            }
+        onValidate {
+
             ack()
         }
         onCommit { event ->
@@ -147,4 +150,6 @@ eventHandler {
             ack()
         }
     }
+
+
 }
