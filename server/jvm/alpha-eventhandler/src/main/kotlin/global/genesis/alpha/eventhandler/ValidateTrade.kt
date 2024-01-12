@@ -14,14 +14,13 @@ class ValidateTrade {
             val counterpartyId = event.details.counterpartyId!!
             val instrumentId = event.details.instrumentId
 
-            //validate is counterpartyId and instrumentId exist in the database
-
+           // validate if there is a counterparty in the database
             val counterparty = entityDb.get(Counterparty.byId(counterpartyId))
-            val instrument = entityDb.get(Instrument.byId(instrumentId))
+                ?: throw IllegalArgumentException("Counterparty not found")
 
-            if (counterparty == null || instrument == null) {
-                throw IllegalArgumentException("Counterparty or Instrument does not exist")
-            }
+            // validate if there is an instrument in the database
+            val instrument = entityDb.get(Instrument.byId(instrumentId))
+                ?: throw IllegalArgumentException("Instrument not found")
 
         }
     }
