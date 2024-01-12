@@ -12,6 +12,7 @@ import global.genesis.gen.view.repository.TradeViewAsyncRepository
 import global.genesis.jackson.core.GenesisJacksonMapper
 import global.genesis.alpha.eventhandler.validate.*
 import global.genesis.alpha.eventhandler.commit.*
+import global.genesis.alpha.message.event.*
 
 /**
  * System              : Genesis Business Library
@@ -28,13 +29,12 @@ val tradeViewRepo = inject<TradeViewAsyncRepository>()
 eventHandler {
     val stateMachine = inject<TradeStateMachine>()
 
-    eventHandler<Trade>(name = "TRADE_INSERT") {
+    eventHandler<Trade, CustomTradeEventReply>(name = "TRADE_INSERT") {
         schemaValidation = false
-        permissionCodes = listOf("INSERT_TRADE")
 
         onValidate {event ->
             ValidateTrade.validateInsert(event, entityDb)
-            ack()
+            CustomTradeEventReply.TradeEventValidateAck()
         }
 
 
@@ -44,10 +44,10 @@ eventHandler {
             if (trade.quantity!! > 0) {
                 trade.enteredBy = event.userName
                 stateMachine.insert(entityDb, trade)
-                ack()
+                CustomTradeEventReply.TradeEventAck("Trade inserted")
             }
             else {
-                nack("Quantity must be positive")
+                CustomTradeEventReply.TradeEventNack("Quantity must be positive")
             }
         }
     }
