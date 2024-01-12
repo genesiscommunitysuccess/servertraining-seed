@@ -26,6 +26,14 @@ tables {
         primaryKey {
             TRADE_ID
         }
+        indices {
+            nonUnique {
+                COUNTERPARTY_ID
+            }
+            nonUnique {
+                INSTRUMENT_ID
+            }
+        }
     }
 
     table (name = "COUNTERPARTY", id = 2001) {

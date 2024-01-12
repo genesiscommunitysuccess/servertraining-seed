@@ -1,7 +1,8 @@
 import java.io.File
 import java.time.LocalDate
 import global.genesis.TradeStateMachine
-import global.genesis.alpha.eventhandler.ValidateTrade
+import global.genesis.alpha.eventhandler.validate.ValidateCounterparty
+import global.genesis.alpha.eventhandler.validate.ValidateInstrument
 import global.genesis.gen.dao.Trade
 import global.genesis.alpha.message.event.TradeAllocated
 import global.genesis.alpha.message.event.TradeCancelled
@@ -9,6 +10,8 @@ import global.genesis.alpha.message.event.PositionReport
 import global.genesis.commons.standards.GenesisPaths
 import global.genesis.gen.view.repository.TradeViewAsyncRepository
 import global.genesis.jackson.core.GenesisJacksonMapper
+import global.genesis.alpha.eventhandler.validate.*
+import global.genesis.alpha.eventhandler.commit.*
 
 /**
  * System              : Genesis Business Library
@@ -29,15 +32,8 @@ eventHandler {
         schemaValidation = false
         permissionCodes = listOf("INSERT_TRADE")
 
-        onException { event, throwable ->
-            nack("MENSAGEM DE ERRO EU ESTIVE AQUI, essa é a mensagem: ${throwable.message}")
-        }
-
-        onValidate {
-            ValidateTrade.validateInsert(
-                event = it,
-                entityDb = entityDb
-            )
+        onValidate {event ->
+            ValidateTrade.validateInsert(event, entityDb)
             ack()
         }
 
@@ -68,14 +64,47 @@ eventHandler {
         }
     }
 
+    eventHandler<Trade>(name="TRADE_UPSERT"){
+        schemaValidation = false
+        onValidate {
+            ValidateTrade.validateUpsert(it,entityDb)
+            ack()
+        }
+        onCommit {
+            CommitTrade.upsert(it,entityDb)
+            ack()
+        }
+    }
+
     eventHandler<Counterparty>(name = "COUNTERPARTY_INSERT", transactional = true) {
         onCommit { event ->
-            entityDb.insert(event.details)
+            entityDb.upsert(event.details)
+            ack()
+        }
+    }
+
+    eventHandler<Counterparty>(name="COUNTERPARTY_UPSERT"){
+        schemaValidation = false
+
+        onCommit {
+            CommitCounterparty.upsert(it,entityDb)
+            ack()
+        }
+    }
+
+    eventHandler<Instrument>(name="INSTRUMENT_UPSERT"){
+        schemaValidation = false
+        onCommit {
+            CommitInstrument.upsert(it,entityDb)
             ack()
         }
     }
 
     eventHandler<Counterparty>(name = "COUNTERPARTY_DELETE", transactional = true) {
+        onValidate{
+            ValidateCounterparty.validateDelete(it, entityDb)
+            ack()
+        }
         onCommit { event ->
             entityDb.delete(event.details)
             ack()

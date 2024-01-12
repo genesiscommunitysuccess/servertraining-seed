@@ -5,7 +5,4 @@ class TrainingClass(
     val field2: String?
 ) {
 
-    fun  learning(): Boolean {
-        return field2.equals(field1)
-    }
 }
