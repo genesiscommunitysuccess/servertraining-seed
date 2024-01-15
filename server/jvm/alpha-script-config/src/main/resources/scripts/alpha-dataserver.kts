@@ -11,13 +11,7 @@ import global.genesis.gen.config.fields.Fields
  * Modification History
  */
 dataServer {
-    query("ALL_TRADES", TRADE_VIEW) {
-        permissioning {
-            auth(mapName = "ENTITY_VISIBILITY") {
-                TRADE_VIEW.COUNTERPARTY_ID
-            }
-        }
-    }
+    query("ALL_TRADES", TRADE_VIEW) {}
     query("ALL_PRICES", TRADE) {
         fields {
             TRADE_ID
@@ -32,4 +26,5 @@ dataServer {
     query("ALL_COUNTERPARTIES", COUNTERPARTY_VIEW)
     query("ALL_INSTRUMENTS", INSTRUMENT)
     query("ALL_POSITIONS", POSITION)
+    query("ALL_TRADES_AUDIT",TRADE_AUDIT)
 }

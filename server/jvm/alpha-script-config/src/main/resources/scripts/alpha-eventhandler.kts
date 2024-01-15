@@ -1,8 +1,6 @@
 import java.io.File
 import java.time.LocalDate
 import global.genesis.TradeStateMachine
-import global.genesis.alpha.eventhandler.validate.ValidateCounterparty
-import global.genesis.alpha.eventhandler.validate.ValidateInstrument
 import global.genesis.gen.dao.Trade
 import global.genesis.alpha.message.event.TradeAllocated
 import global.genesis.alpha.message.event.TradeCancelled
@@ -13,6 +11,7 @@ import global.genesis.jackson.core.GenesisJacksonMapper
 import global.genesis.alpha.eventhandler.validate.*
 import global.genesis.alpha.eventhandler.commit.*
 import global.genesis.alpha.message.event.*
+
 
 /**
  * System              : Genesis Business Library
@@ -34,7 +33,8 @@ eventHandler {
 
         onValidate {event ->
             ValidateTrade.validateInsert(event, entityDb)
-            CustomTradeEventReply.TradeEventValidateAck()
+            CustomTradeEventReply.ValidationTradeAck()
+
         }
 
 
@@ -44,19 +44,16 @@ eventHandler {
             if (trade.quantity!! > 0) {
                 trade.enteredBy = event.userName
                 stateMachine.insert(entityDb, trade)
-                CustomTradeEventReply.TradeEventAck("Trade inserted")
+                CustomTradeEventReply.TradeAck("Trade was successfully inserted: ${trade.tradeId}")
             }
             else {
-                CustomTradeEventReply.TradeEventNack("Quantity must be positive")
+                CustomTradeEventReply.TradeNack("Quantity must be greater than zero")
             }
         }
     }
 
     eventHandler<Trade>(name = "TRADE_MODIFY", transactional = true) {
-        onValidate {
 
-            ack()
-        }
         onCommit { event ->
             val trade = event.details
             stateMachine.modify(entityDb, trade)
@@ -76,10 +73,18 @@ eventHandler {
         }
     }
 
-    eventHandler<Counterparty>(name = "COUNTERPARTY_INSERT", transactional = true) {
-        onCommit { event ->
-            entityDb.upsert(event.details)
-            ack()
+    eventHandler<Counterparty, CustomCounterpartyEventReply>(name="COUNTERPARTY_INSERT", transactional = true){
+        schemaValidation = false
+        onValidate {
+            CustomCounterpartyEventReply.ValidationCounterpartyAck()
+        }
+        onCommit {
+            if (it.details.counterpartyId.contains("1234")){
+                CustomCounterpartyEventReply.CounterpartyNack("Invalid counterparty")
+            } else{
+                entityDb.insert(it.details)
+                CustomCounterpartyEventReply.CounterpartyAck("Counterparty successfully inserted: ${it.details.counterpartyId}")
+            }
         }
     }
 
@@ -118,10 +123,18 @@ eventHandler {
         }
     }
 
-    eventHandler<Instrument>(name = "INSTRUMENT_INSERT", transactional = true) {
-        onCommit { event ->
-            entityDb.insert(event.details)
-            ack()
+    eventHandler<Instrument, CustomInstrumentEventReply>(name="INSTRUMENT_INSERT", transactional = true){
+        schemaValidation = false
+        onValidate {
+            CustomInstrumentEventReply.ValidationInstrumentAck()
+        }
+        onCommit {
+            if (it.details.instrumentId.contains("1234")){
+                CustomInstrumentEventReply.InstrumentNack("Invalid Instrument")
+            } else{
+                entityDb.insert(it.details)
+                CustomInstrumentEventReply.InstrumentAck("Instrument successfully inserted: ${it.details.instrumentId}")
+            }
         }
     }
 

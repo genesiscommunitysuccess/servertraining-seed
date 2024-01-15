@@ -40,3 +40,4 @@ export const HomeTemplate = html<Home>`
     </div>
 </div>
 `;
+
