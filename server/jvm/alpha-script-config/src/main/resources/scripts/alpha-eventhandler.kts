@@ -31,12 +31,14 @@ eventHandler {
     eventHandler<Trade, CustomTradeEventReply>(name = "TRADE_INSERT") {
         schemaValidation = false
 
+        onException{event, throwable ->
+            CustomTradeEventReply.TradeNack("ERROR: ${throwable.message}")
+        }
+
         onValidate {event ->
             ValidateTrade.validateInsert(event, entityDb)
             CustomTradeEventReply.ValidationTradeAck()
-
         }
-
 
         onCommit { event ->
             val trade = event.details
@@ -75,16 +77,19 @@ eventHandler {
 
     eventHandler<Counterparty, CustomCounterpartyEventReply>(name="COUNTERPARTY_INSERT", transactional = true){
         schemaValidation = false
+
+        onException{ _ , throwable ->
+            CustomCounterpartyEventReply.CounterpartyNack("ERROR: ${throwable.message}")
+        }
         onValidate {
+            require(!it.details.counterpartyId.contains("1234")){
+                "COUNTERPARTY_ID cannot contain 1234"
+            }
             CustomCounterpartyEventReply.ValidationCounterpartyAck()
         }
         onCommit {
-            if (it.details.counterpartyId.contains("1234")){
-                CustomCounterpartyEventReply.CounterpartyNack("Invalid counterparty")
-            } else{
-                entityDb.insert(it.details)
-                CustomCounterpartyEventReply.CounterpartyAck("Counterparty successfully inserted: ${it.details.counterpartyId}")
-            }
+            entityDb.insert(it.details)
+            CustomCounterpartyEventReply.CounterpartyAck("Counterparty successfully inserted: ${it.details.counterpartyId}")
         }
     }
 
@@ -125,16 +130,20 @@ eventHandler {
 
     eventHandler<Instrument, CustomInstrumentEventReply>(name="INSTRUMENT_INSERT", transactional = true){
         schemaValidation = false
+
+        onException{ _ , throwable ->
+            CustomInstrumentEventReply.InstrumentNack("ERROR: ${throwable.message}")
+        }
+
         onValidate {
+            require(!it.details.instrumentId.contains("1234")){
+                "INSTRUMENT_ID cannot contain 1234"
+            }
             CustomInstrumentEventReply.ValidationInstrumentAck()
         }
         onCommit {
-            if (it.details.instrumentId.contains("1234")){
-                CustomInstrumentEventReply.InstrumentNack("Invalid Instrument")
-            } else{
-                entityDb.insert(it.details)
-                CustomInstrumentEventReply.InstrumentAck("Instrument successfully inserted: ${it.details.instrumentId}")
-            }
+            entityDb.insert(it.details)
+            CustomInstrumentEventReply.InstrumentAck("Instrument successfully inserted: ${it.details.instrumentId}")
         }
     }
 
