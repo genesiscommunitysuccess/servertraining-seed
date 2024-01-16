@@ -21,5 +21,14 @@ class ValidateInstrument {
             require(trade == null) { "Trades are using this Instrument. Unable to delete" }
 
         }
+
+        suspend fun validateCascadeDelete(
+            event: Event<Instrument>,
+            entityDb: AsyncMultiEntityReadWriteGenericSupport
+        ) : List<Trade>{
+            val instrumentId = event.details.instrumentId
+
+            return entityDb.getRange(Trade.byInstrumentId(instrumentId)).toList()
+        }
     }
 }

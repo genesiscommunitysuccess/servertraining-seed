@@ -38,5 +38,6 @@ fields {
     field("LAST_PRICE", type = DOUBLE)
     field("VALUE", type = DOUBLE)
     field("PNL", type = DOUBLE)
+
 }
 

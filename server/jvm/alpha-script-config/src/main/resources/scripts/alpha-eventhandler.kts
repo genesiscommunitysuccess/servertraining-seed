@@ -11,6 +11,7 @@ import global.genesis.jackson.core.GenesisJacksonMapper
 import global.genesis.alpha.eventhandler.validate.*
 import global.genesis.alpha.eventhandler.commit.*
 import global.genesis.alpha.message.event.*
+import global.genesis.commons.model.GenesisSet.Companion.genesisSet
 
 
 /**
@@ -128,6 +129,7 @@ eventHandler {
         }
     }
 
+
     eventHandler<Instrument, CustomInstrumentEventReply>(name="INSTRUMENT_INSERT", transactional = true){
         schemaValidation = false
 
@@ -144,6 +146,46 @@ eventHandler {
         onCommit {
             entityDb.insert(it.details)
             CustomInstrumentEventReply.InstrumentAck("Instrument successfully inserted: ${it.details.instrumentId}")
+        }
+    }
+
+    contextEventHandler<Instrument, List<Trade>>(name = "INSTRUMENT_DELETE_CASCADE", transactional = true){
+        onValidate{ event ->
+            val trades = ValidateInstrument.validateCascadeDelete(event, entityDb)
+            validationResult(ack(),trades)
+        }
+
+        onCommit{ event, trades ->
+            if(trades != null){
+                for (trade in trades){
+                    LOG.info("Deleting trade ${trade.tradeId}")
+                    entityDb.delete(Trade.byId(trade.tradeId))
+                }
+            }
+            entityDb.delete(event.details)
+            ack()
+        }
+    }
+
+    contextEventHandler<Counterparty, List<Trade>>(name = "COUNTERPARTY_DELETE_CASCADE", transactional = true){
+        onException{ _ , throwable ->
+            nack("ERROR: ${throwable.message}")
+        }
+
+        onValidate{ event ->
+            val trades = ValidateCounterparty.validateCascadeDelete(event, entityDb)
+            validationResult(ack(),trades)
+        }
+
+        onCommit{ event, trades ->
+            if(trades != null){
+                for (trade in trades){
+                    LOG.info("Deleting trade ${trade.tradeId}")
+                    entityDb.delete(Trade.byId(trade.tradeId))
+                }
+            }
+            entityDb.delete(event.details)
+            ack()
         }
     }
 
@@ -201,6 +243,5 @@ eventHandler {
             ack()
         }
     }
-
 
 }
