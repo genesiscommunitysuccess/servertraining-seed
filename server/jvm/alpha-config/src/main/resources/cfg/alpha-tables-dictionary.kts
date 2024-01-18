@@ -86,5 +86,17 @@ tables {
         }
     }
 
+    // create a company table
+    table(name = "COMPANY", id = 2005) {
+        sequence(COMPANY_ID, "CO")
+        COMPANY_NAME
+        COMPANY_LEI
+        COMPANY_CEO
+        COMPANY_STATUS
+
+        primaryKey {
+            COMPANY_ID
+        }
+    }
 
 }

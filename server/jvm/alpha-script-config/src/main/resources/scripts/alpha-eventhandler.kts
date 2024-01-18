@@ -11,6 +11,8 @@ import global.genesis.jackson.core.GenesisJacksonMapper
 import global.genesis.alpha.eventhandler.validate.*
 import global.genesis.alpha.eventhandler.commit.*
 import global.genesis.alpha.message.event.*
+import global.genesis.clustersupport.service.ServiceDiscovery
+import  global.genesis.message.core.event.*
 import global.genesis.commons.model.GenesisSet.Companion.genesisSet
 
 
@@ -36,8 +38,10 @@ eventHandler {
             CustomTradeEventReply.TradeNack("ERROR: ${throwable.message}")
         }
 
+
         onValidate {event ->
             ValidateTrade.validateInsert(event, entityDb)
+            LOG.info(event.userName)
             CustomTradeEventReply.ValidationTradeAck()
         }
 
@@ -244,4 +248,72 @@ eventHandler {
         }
     }
 
+    eventHandler<Company>("COMPANY_INSERT", transactional = true) {
+            requiresPendingApproval { event ->
+            event.userName != "system.user"
+            event.approvalMessage = "My Custom Approval Message"
+            true
+            }
+
+        onValidate { event ->
+            val company = event.details
+
+            approvableAck(
+                entityDetails = listOf(
+                    ApprovalEntityDetails(
+                        entityTable = "COMPANY",
+                        entityId = event.details.companyId,
+                        approvalType = ApprovalType.NEW,
+                       )
+                ),
+                approvalMessage = "Company update for ${company.companyId} has been sent for approval.",
+                approvalType = ApprovalType.NEW,
+                additionalDetails = "Sensitive update, tread carefully"
+            )
+        }
+        onCommit { event ->
+            val company = event.details
+            LOG.info("COMPANY HAS BEEN INSERTED: ${company.companyId}")
+            entityDb.insert(company)
+            ack()
+        }
+    }
+
+    eventHandler<RejectPendingApproval>("REJECT_PENDING_APPROVALS", transactional = true) {
+        onValidate {
+            val client = serviceDiscovery.resolveClientByResource("EVENT_PENDING_APPROVAL_SYSTEM_REJECT")
+            if (client != null) {
+                nack("EVENT_PENDING_APPROVAL_SYSTEM_REJECT is not available")
+            }
+            val approvals = entityDb.getBulk(APPROVAL)
+                .filter { it.approvalStatus == ApprovalStatus.PENDING }
+                .collect{ approval ->
+                    val reply: EventReply? = client?.suspendRequest(
+                        Event(
+                            messageType = "EVENT_PENDING_APPROVAL_SYSTEM_REJECT",
+                            userName = "SYSTEM",
+                            details = ApprovalSystemRejectMessage(
+                                approvalKey = approval.approvalKey,
+                                approvalMessage = "Rejected by system"
+                            )
+                        )
+                    )
+                    when (reply) {
+                        is EventReply.EventAck ->
+                            LOG.info("Successfully rejected APPROVAL_ID: ${approval.approvalId}")
+
+                        is EventReply.EventNack ->
+                            LOG.error("Failed to rejected APPROVAL_ID: ${approval.approvalId}: $reply")
+
+                        else ->
+                            LOG.error("Unexpected response from pending approval system: $reply")
+                    }
+                }
+            ack()
+        }
+
+        onCommit {
+            ack()
+        }
+    }
 }
