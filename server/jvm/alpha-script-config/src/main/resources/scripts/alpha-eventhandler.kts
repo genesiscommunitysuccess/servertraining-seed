@@ -264,9 +264,15 @@ eventHandler {
 
 
             pendingApprovals.forEach {
-                LOG.info(it.eventMessage.toString())
-                if(it.eventMessage?.contains("\"COMPANY_ID\":\"3\" ${company.companyId}\"") == true){
-                    nack("Company insert for ${company.companyId} ERROR... ID in course of approval")
+                val companyId = it.eventMessage
+                    .split("\",\"")
+                    .find{ it.contains("COMPANY_ID")}
+                    ?.split(":")
+                    ?.get(2)
+                    ?.removePrefix("\"")
+                LOG.info(companyId)
+                if (companyId == company.companyId){
+                    throw NoSuchElementException ("Company insert for ${company.companyId} has already been sent for approval, choose another company ID")
                 }
             }
 
@@ -276,7 +282,7 @@ eventHandler {
                     ApprovalEntityDetails(
                         entityTable = "COMPANY",
                         entityId = company.companyId,
-                        approvalType = ApprovalType.NEW
+                        approvalType = ApprovalType.NEW,
                     )
                 ),
                 approvalMessage = "Company insert for ${company.companyId} has been sent for approval",
@@ -295,3 +301,4 @@ eventHandler {
     }
 
 }
+
