@@ -6,14 +6,13 @@ import global.genesis.alpha.message.event.TradeAllocated
 import global.genesis.alpha.message.event.TradeCancelled
 import global.genesis.alpha.message.event.PositionReport
 import global.genesis.commons.standards.GenesisPaths
-import global.genesis.gen.view.repository.TradeViewAsyncRepository
+import global.genesis.db.rx.entity.multi.AsyncEntityDb
 import global.genesis.jackson.core.GenesisJacksonMapper
 import global.genesis.alpha.eventhandler.validate.*
 import global.genesis.alpha.eventhandler.commit.*
 import global.genesis.alpha.message.event.*
 import global.genesis.clustersupport.service.ServiceDiscovery
-import  global.genesis.message.core.event.*
-import global.genesis.commons.model.GenesisSet.Companion.genesisSet
+import global.genesis.message.core.event.ApprovalType
 
 
 /**
@@ -26,7 +25,7 @@ import global.genesis.commons.model.GenesisSet.Companion.genesisSet
  *
  * Modification History
  */
-val tradeViewRepo = inject<TradeViewAsyncRepository>()
+val tradeViewRepo = inject<AsyncEntityDb>()
 
 eventHandler {
     val stateMachine = inject<TradeStateMachine>()
@@ -34,7 +33,7 @@ eventHandler {
     eventHandler<Trade, CustomTradeEventReply>(name = "TRADE_INSERT") {
         schemaValidation = false
 
-        onException{event, throwable ->
+        onException{_ , throwable ->
             CustomTradeEventReply.TradeNack("ERROR: ${throwable.message}")
         }
 
@@ -235,9 +234,9 @@ eventHandler {
             val positionReportFolder = File(GenesisPaths.runtime()).resolve("position-minute-report")
             if (!positionReportFolder.exists()) positionReportFolder.mkdirs()
 
-            tradeViewRepo.getBulk()
+            tradeViewRepo.getBulk(TRADE)
                 .toList()
-                .groupBy { it.counterpartyName }
+                .groupBy { Trade.COUNTERPARTY_ID }
                 .forEach { (counterParty, trades) ->
                     val file = positionReportFolder.resolve("${counterParty}_$today.csv")
                     if (file.exists()) file.delete()
@@ -247,73 +246,52 @@ eventHandler {
             ack()
         }
     }
+    eventHandler<Company> (name = "COMPANY_INSERT", transactional = true){
+        onException{ _ , throwable ->
+            nack("ERROR: ${throwable.message}")
+        }
 
-    eventHandler<Company>("COMPANY_INSERT", transactional = true) {
-            requiresPendingApproval { event ->
+        requiresPendingApproval { event ->
+            event.approvalMessage = "My custom approval message"
             event.userName != "system.user"
-            event.approvalMessage = "My Custom Approval Message"
-            true
+        }
+
+        onValidate {
+            val company = it.details
+
+            val pendingApprovals = entityDb.getBulk(APPROVAL)
+                .filter { it.approvalStatus == ApprovalStatus.PENDING }.toList()
+
+
+            pendingApprovals.forEach {
+                LOG.info(it.eventMessage.toString())
+                if(it.eventMessage?.contains("\"COMPANY_ID\":\"3\" ${company.companyId}\"") == true){
+                    nack("Company insert for ${company.companyId} ERROR... ID in course of approval")
+                }
             }
 
-        onValidate { event ->
-            val company = event.details
 
             approvableAck(
                 entityDetails = listOf(
                     ApprovalEntityDetails(
                         entityTable = "COMPANY",
-                        entityId = event.details.companyId,
-                        approvalType = ApprovalType.NEW,
-                       )
-                ),
-                approvalMessage = "Company update for ${company.companyId} has been sent for approval.",
-                approvalType = ApprovalType.NEW,
-                additionalDetails = "Sensitive update, tread carefully"
-            )
-        }
-        onCommit { event ->
-            val company = event.details
-            LOG.info("COMPANY HAS BEEN INSERTED: ${company.companyId}")
-            entityDb.insert(company)
-            ack()
-        }
-    }
-
-    eventHandler<RejectPendingApproval>("REJECT_PENDING_APPROVALS", transactional = true) {
-        onValidate {
-            val client = serviceDiscovery.resolveClientByResource("EVENT_PENDING_APPROVAL_SYSTEM_REJECT")
-            if (client != null) {
-                nack("EVENT_PENDING_APPROVAL_SYSTEM_REJECT is not available")
-            }
-            val approvals = entityDb.getBulk(APPROVAL)
-                .filter { it.approvalStatus == ApprovalStatus.PENDING }
-                .collect{ approval ->
-                    val reply: EventReply? = client?.suspendRequest(
-                        Event(
-                            messageType = "EVENT_PENDING_APPROVAL_SYSTEM_REJECT",
-                            userName = "SYSTEM",
-                            details = ApprovalSystemRejectMessage(
-                                approvalKey = approval.approvalKey,
-                                approvalMessage = "Rejected by system"
-                            )
-                        )
+                        entityId = company.companyId,
+                        approvalType = ApprovalType.NEW
                     )
-                    when (reply) {
-                        is EventReply.EventAck ->
-                            LOG.info("Successfully rejected APPROVAL_ID: ${approval.approvalId}")
-
-                        is EventReply.EventNack ->
-                            LOG.error("Failed to rejected APPROVAL_ID: ${approval.approvalId}: $reply")
-
-                        else ->
-                            LOG.error("Unexpected response from pending approval system: $reply")
-                    }
-                }
-            ack()
+                ),
+                approvalMessage = "Company insert for ${company.companyId} has been sent for approval",
+                approvalType = ApprovalType.NEW,
+                additionalDetails = "Custom additional details"
+            )
         }
 
         onCommit {
+
+            val company = it.details
+            entityDb.insert(company)
+            LOG.info("Company insert for ${company.companyId} successfully")
             ack()
         }
     }
+
 }
