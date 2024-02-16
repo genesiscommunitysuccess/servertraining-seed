@@ -47,6 +47,22 @@ tables {
         }
     }
 
+    table (name = "USER_COUNTERPARTY_HIDE_LEI", id=2010){
+        sequence(USER_COUNTERPARTY_HIDE_LEI_ID, "UC")
+        USER_NAME_COUNTERPARTY
+        COUNTERPARTY_ID
+        HIDE_LEI
+        primaryKey {
+            USER_COUNTERPARTY_HIDE_LEI_ID
+        }
+        indices {
+            unique {
+                USER_NAME_COUNTERPARTY
+                COUNTERPARTY_ID
+            }
+        }
+    }
+
     table (name = "INSTRUMENT", id = 2002) {
         sequence(INSTRUMENT_ID, "IN")
         INSTRUMENT_NAME

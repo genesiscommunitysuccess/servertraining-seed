@@ -23,7 +23,23 @@ dataServer {
             trade.price!! > 0.0
         }
     }
-    query("ALL_COUNTERPARTIES", COUNTERPARTY_VIEW)
+    query("ALL_COUNTERPARTIES" , COUNTERPARTY_VIEW){
+        enrich(USER_COUNTERPARTY_HIDE_LEI){
+            join {userName, row ->
+                UserCounterpartyHideLei.byUserNameCounterpartyCounterpartyId(userName, row.counterpartyId)
+            }
+            hideFields { counterpartyView, _, userData ->
+                if(userData?.hideLei == true){
+                    listOf(COUNTERPARTY_LEI)
+                } else{
+                    emptyList()
+                }
+            }
+            fields {
+                USER_COUNTERPARTY_HIDE_LEI.HIDE_LEI
+            }
+        }
+    }
     query("ALL_INSTRUMENTS", INSTRUMENT)
     query("ALL_POSITIONS", POSITION)
     query("ALL_TRADES_AUDIT",TRADE_AUDIT)
