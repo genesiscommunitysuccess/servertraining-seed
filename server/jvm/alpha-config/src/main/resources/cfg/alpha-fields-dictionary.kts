@@ -21,6 +21,9 @@ fields {
     field("COUNTERPARTY_NAME", type = STRING)
     field("ENABLED", type = BOOLEAN)
     field("COUNTERPARTY_LEI", type = STRING)
+    field("USER_COUNTERPARTY_HIDE_LEI_ID", type= STRING)
+    field("USER_NAME_COUNTERPARTY", type= STRING)
+    field("HIDE_LEI", type= BOOLEAN)
 
     field("INSTRUMENT_ID", type = STRING)
     field("INSTRUMENT_NAME", type = STRING)

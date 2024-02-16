@@ -54,4 +54,14 @@
         <description>Dynamic/time rules engine</description>
         <loggingLevel>DEBUG,DATADUMP_ON</loggingLevel>
     </process>
+    <process name="ALPHA_REQUEST_SERVER">
+        <groupId>ALPHA</groupId>
+        <start>true</start>
+        <options>-Xmx256m -DXSD_VALIDATE=false</options>
+        <module>genesis-pal-requestserver</module>
+        <package>global.genesis.requestreply.pal</package>
+        <script>alpha-reqrep.kts</script>
+        <description>Server one-shot requests for details</description>
+        <language>pal</language>
+    </process>
 </processes>
