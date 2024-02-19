@@ -13,13 +13,7 @@ import global.genesis.gen.config.fields.Fields
 requestReplies {
     requestReply("TRADE_DETAILS",TRADE){
         request {
-            COUNTERPARTY_ID withTransformation { type, _ ->
-                if (type == "2") {
-                    "This was transformed"
-                } else {
-                    type
-                }
-            }
+            COUNTERPARTY_ID
         }
         reply{
             TRADE_ID
