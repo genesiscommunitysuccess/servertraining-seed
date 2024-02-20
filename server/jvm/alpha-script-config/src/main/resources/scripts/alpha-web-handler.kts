@@ -1,8 +1,7 @@
-webHandlers("my-base-path") {
-    endpoint(GET, "all-trades") {
+webHandlers("BASE-PATH") {
+    endpoint(GET, "ALL-TRADES") {
         handleRequest {
             db.getBulk(TRADE)
         }
     }
 }
-
