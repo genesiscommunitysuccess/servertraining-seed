@@ -11,6 +11,7 @@ dependencies {
     api(project(":alpha-messages"))
     api(project(":alpha-eventhandler"))
     compileOnly(project(path = ":alpha-dictionary-cache", configuration = "codeGen"))
+    compileOnly("global.genesis:genesis-router")
     testCompileOnly(project(":alpha-config"))
     testImplementation("global.genesis:genesis-dbtest")
     testImplementation("global.genesis:genesis-testsupport")
