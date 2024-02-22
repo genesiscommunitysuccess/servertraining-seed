@@ -292,7 +292,7 @@ eventHandler {
         }
 
         onCommit {
-
+            val pendingApprovals = entityDb.getBulk(APPROVAL)
             val company = it.details
             entityDb.insert(company)
             LOG.info("Company insert for ${company.companyId} successfully")

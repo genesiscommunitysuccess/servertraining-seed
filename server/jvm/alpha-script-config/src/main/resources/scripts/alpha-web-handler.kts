@@ -1,14 +1,25 @@
 import global.genesis.message.core.HttpStatusCode
+import java.nio.file.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 webHandlers("BASE-PATH"){
-    endpoint(GET, "ALL-TRADES"){
-        val searchTradeId by header("SEARCH_TRADE_ID")
-        handleRequest {
-            require(searchTradeId != "1") { "searchTradeId cannot be 1"}
-            db.get(Trade.byId(searchTradeId))
+
+    val tmp = Files.createTempDirectory("test")
+    multipartEndpoint("test") {
+        config{
+            multiPart {
+                maxFileSize = 10_000_000
+                useDisk = true
+                baseDir = "Gui_TEST/fileuploadtemp"
+            }
         }
-        exceptionHandler<IllegalArgumentException>(HttpStatusCode.BadRequest){
-            exception.message ?: "Error performing the search"
+
+        handleRequest {
+            body.fileUploads.forEach{
+                it.copyTo(tmp.resolve(it.fileName))
+            }
+            "Very Good"
         }
     }
 
