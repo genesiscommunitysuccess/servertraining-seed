@@ -1,10 +1,10 @@
 requestReplies {
-    requestReply("TRADE_DETAILS",TRADE){
+    requestReply("TRADE_BY_COUNTERPARTY",TRADE){
         request {
             COUNTERPARTY_ID withTransformation { type, _ ->
-                if (type == "2") {
+                if (type == "2"){
                     "UNKOWN"
-                } else {
+                }else{
                     type
                 }
             }
