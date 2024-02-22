@@ -24,6 +24,7 @@ fields {
     field("USER_COUNTERPARTY_HIDE_LEI_ID", type= STRING)
     field("USER_NAME_COUNTERPARTY", type= STRING)
     field("HIDE_LEI", type= BOOLEAN)
+    field("BEEN_AUDITED", type= BOOLEAN)
 
     field("INSTRUMENT_ID", type = STRING)
     field("INSTRUMENT_NAME", type = STRING)
