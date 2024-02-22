@@ -1,21 +1,10 @@
-requestReplies {
-    requestReply("TRADE_BY_COUNTERPARTY",TRADE){
-        request {
-            COUNTERPARTY_ID withTransformation { type, _ ->
-                if (type == "2"){
-                    "UNKOWN"
-                }else{
-                    type
-                }
-            }
-        }
+data class InputClass(val field1: String, val field2: Int?)
+data class OutputClass(val message: String,val details: String)
 
-        reply {
-            TRADE_ID
-            COUNTERPARTY_ID
-            INSTRUMENT_ID
-            QUANTITY
-            PRICE
+requestReplies {
+    requestReply<InputClass, OutputClass>("CUSTOM_REQUEST") {
+        replySingle { input ->
+            OutputClass(message = input.field1, details = "This number: ${input.field2}")
         }
     }
 }
