@@ -17,5 +17,5 @@
     <service host="localhost" name="ALPHA_EVALUATOR" port="11003"/>
     <service host="localhost" name="ALPHA_REQUEST_SERVER" port="11004"/>
     <service host="localhost" name="ALPHA_STREAMER" port="11005"/>
-    <service host="localhost" name="ALPHA_STREAMER_CLIENT" port="11006"/>
+    <service host="localhost" name="ALPHA_STREAMER_CLIENT" port="11007"/>
 </configuration>

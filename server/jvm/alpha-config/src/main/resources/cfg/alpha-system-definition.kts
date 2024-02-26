@@ -12,6 +12,7 @@ systemDefinition {
     global {
         item(name = "ADMIN_PERMISSION_ENTITY_TABLE", value = "COUNTERPARTY")
         item(name = "ADMIN_PERMISSION_ENTITY_FIELD", value = "COUNTERPARTY_ID")
+        item(name = "BASE_DIR_FILES", value = "/home/alpha/run/runtime/GUI_TEST/files")
     }
 
     systems {

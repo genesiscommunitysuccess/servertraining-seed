@@ -299,11 +299,18 @@ eventHandler {
             ack()
         }
     }
-    eventHandler<TradeAudit>(name = "TRADE_AUDIT_STREAM") {
-        onCommit { event ->
+
+    eventHandler<TradeAudit>(name = "TRADE_AUDIT_STREAM"){
+        schemaValidation = false
+        onCommit{ event ->
             val message = event.details
-            stateMachine.modify(entityDb, message.tradeId) { trade ->
-                trade.beenAudited = true
+            if(message.beenAudited == false || message.beenAudited == null){
+                stateMachine.modify(entityDb,message.tradeId){
+                    it.beenAudited = true
+                }
+                LOG.info("Trade_ID: ${message.tradeId} validated")
+            }else {
+                LOG.info("Trade_ID: ${message.tradeId} already validated")
             }
             ack()
         }
