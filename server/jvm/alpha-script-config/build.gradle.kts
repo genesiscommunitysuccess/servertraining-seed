@@ -10,6 +10,7 @@ dependencies {
     api("global.genesis:genesis-dataserver2")
     api("global.genesis:genesis-pal-camel")
     api("org.apache.camel:camel-core")
+    api("global.genesis:genesis-pal-datapipeline")
     api(project(":alpha-messages"))
     api(project(":alpha-eventhandler"))
     compileOnly(project(path = ":alpha-dictionary-cache", configuration = "codeGen"))

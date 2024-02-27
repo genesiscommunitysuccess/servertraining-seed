@@ -64,4 +64,26 @@
         <description>Server one-shot requests for details</description>
         <language>pal</language>
     </process>
+    <process name="ALPHA_DATAPIPELINE">
+        <groupId>ALPHA</groupId>
+        <start>true</start>
+        <options>-Xmx256m -DRedirectStreamsToLog=true -DXSD_VALIDATE=false</options>
+        <module>genesis-pal-datapipeline</module>
+        <package>global.genesis.datapipeline.pal</package>
+        <script>alpha-data-pipeline.kts</script>
+        <description>External data ingress pipeline</description>
+        <language>pal</language>
+        <loggingLevel>TRACE,DATADUMP_ON</loggingLevel>
+    </process>
+    <process name="ALPHA_CAMEL">
+        <groupId>ALPHA</groupId>
+        <start>true</start>
+        <options>-Xmx256m -DRedirectStreamsToLog=true -DXSD_VALIDATE=false</options>
+        <module>genesis-pal-camel</module>
+        <package>global.genesis.camel.pal</package>
+        <script>alpha-camel.kts</script>
+        <description>Alpha Camel integrations</description>
+        <classpath>alpha-messages*,alpha-camel*,alpha-camel-libs*.jar</classpath>
+        <language>pal</language>
+    </process>
 </processes>
