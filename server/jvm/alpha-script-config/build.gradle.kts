@@ -8,6 +8,8 @@ dependencies {
     api("global.genesis:genesis-pal-streamerclient")
     api("global.genesis:genesis-pal-eventhandler")
     api("global.genesis:genesis-dataserver2")
+    api("global.genesis:genesis-pal-camel")
+    api("org.apache.camel:camel-core")
     api(project(":alpha-messages"))
     api(project(":alpha-eventhandler"))
     compileOnly(project(path = ":alpha-dictionary-cache", configuration = "codeGen"))
