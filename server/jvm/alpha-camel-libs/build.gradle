@@ -1,0 +1,5 @@
+dependencies{
+    api("org.apache.camel:camel-ftp")
+}
+
+description = "alpha-camel-libs"
