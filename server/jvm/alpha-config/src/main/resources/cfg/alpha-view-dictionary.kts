@@ -32,7 +32,6 @@ views {
             derivedField("CONSIDERATION", DOUBLE) {
                 withInput(TRADE.QUANTITY, TRADE.PRICE) { QUANTITY, PRICE ->
                     QUANTITY * PRICE
-                    PRICE * 0.0
                 }
             }
 
@@ -43,6 +42,12 @@ views {
                     }
                     ASSET_CLASS
                 }
+            }
+
+            derivedField("TEST_FIELD", STRING){
+                withEntity(INSTRUMENT){
+                    it.assetClass
+            }
             }
         }
     }
