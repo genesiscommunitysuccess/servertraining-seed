@@ -21,6 +21,10 @@ fields {
     field("COUNTERPARTY_NAME", type = STRING)
     field("ENABLED", type = BOOLEAN)
     field("COUNTERPARTY_LEI", type = STRING)
+    field("USER_COUNTERPARTY_HIDE_LEI_ID", type= STRING)
+    field("USER_NAME_COUNTERPARTY", type= STRING)
+    field("HIDE_LEI", type= BOOLEAN)
+    field("BEEN_AUDITED", type= BOOLEAN)
 
     field("INSTRUMENT_ID", type = STRING)
     field("INSTRUMENT_NAME", type = STRING)
@@ -38,5 +42,11 @@ fields {
     field("LAST_PRICE", type = DOUBLE)
     field("VALUE", type = DOUBLE)
     field("PNL", type = DOUBLE)
+
+    field("COMPANY_ID", type = STRING)
+    field("COMPANY_NAME", type = STRING)
+    field("COMPANY_LEI", type = STRING)
+    field("COMPANY_CEO", type = STRING)
+    field(name = "COMPANY_STATUS", type = ENUM("NEW", "OPENED", "CLOSED", default = "NEW"))
 }
 
