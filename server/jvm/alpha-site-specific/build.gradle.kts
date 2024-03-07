@@ -112,3 +112,6 @@ fun buildTagFor(version: String): String =
         else -> "release"
     }
 operator fun Regex.contains(s: String) = matches(s)
+dependencies {
+    implementation(kotlin("script-runtime"))
+}

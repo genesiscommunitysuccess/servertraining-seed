@@ -12,7 +12,7 @@ systemDefinition {
         item(name = "ZeroMQProxyOutboundPort", value = "5000")
         item(name = "DbHost", value = "jdbc:postgresql://localhost:5432/postgres?user=postgres&password=postgres")
         item(name = "DbSqlMaxPoolSize", value = "4")
-        item(name = "DbMode", value = "VANILLA")
+        item(name = "DbMode", value = "POSTGRESQL")
         item(name = "GenesisNetProtocol", value = "V2")
         item(name = "ResourcePollerTimeout", value = "5")
         item(name = "ReqRepTimeout", value = "60")
