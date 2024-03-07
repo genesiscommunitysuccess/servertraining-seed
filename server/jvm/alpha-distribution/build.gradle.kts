@@ -8,7 +8,6 @@ dependencies {
     implementation(project(":alpha-eventhandler"))
     implementation(project(":alpha-messages"))
     implementation(project(":alpha-script-config"))
-    implementation(project(":alpha-camel-libs"))
 }
 
 description = "alpha-distribution"
